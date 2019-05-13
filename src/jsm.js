@@ -157,7 +157,7 @@ mixin(JSM.prototype, {
                      .catch(this.failTransit.bind(this))
       }
       else if (result === false) {
-        return this.endTransit(false);
+        return this.endTransit(this.context.onCancelledTransition(args[0].transition, args[0].from, args[0].to));
       }
       else {
         return this.observeEvents(events, args, event, result);
@@ -171,6 +171,10 @@ mixin(JSM.prototype, {
 
   onPendingTransition: function(transition, from, to) {
     throw new Exception("transition is invalid while previous transition is still in progress", transition, from, to, this.state);
+  },
+
+  onCancelledTransition: function(transition, from, to) {
+    return false;
   }
 
 });

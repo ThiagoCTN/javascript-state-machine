@@ -930,3 +930,53 @@ test('lifecycle events for custom init transition', t => {
 })
 
 //-------------------------------------------------------------------------------------------------
+
+test('cancelled transition returns false by default', t => {
+
+  var fsm = new StateMachine({
+    transitions: [
+      { name: 'step', from: 'none', to: 'A' },
+    ],
+    methods: {
+      onLeaveNone: function() { return false; },
+    }
+  });
+
+  t.is(fsm.state,       'none');
+  t.is(fsm.can('step'), true);
+  t.is(fsm.step(),      false);
+  t.is(fsm.state,       'none');
+})
+
+//-------------------------------------------------------------------------------------------------
+
+test('cancelled transition handler can be customized', t => {
+
+  var fsm = new StateMachine({
+    transitions: [
+      { name: 'step', from: 'none', to: 'A' },
+    ],
+    methods: {
+      onLeaveNone: function() { return false; },
+      
+      onCancelledTransition: function(transition, from, to) {
+        throw { message: "transition cancelled", transition: transition, from: from, to: to, current: this.state };
+      }
+    }
+  });
+
+  t.is(fsm.state,       'none');
+  t.is(fsm.can('step'), true);
+
+  const error = t.throws(() => {
+    fsm.step();
+  });
+
+  t.is(error.message,    'transition cancelled');
+  t.is(error.transition, 'step');
+  t.is(error.from,       'none');
+  t.is(error.to,         'A');
+  t.is(error.current,    'none');
+})
+
+//-------------------------------------------------------------------------------------------------

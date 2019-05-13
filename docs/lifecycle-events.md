@@ -146,3 +146,25 @@ lifecycle events:
 
 All subsequent lifecycle events will be cancelled and the state will remain unchanged.
 
+When you cancel a transition during one of the mentioned lifecycle events, the `onCancelledTransition` handler is called. It just returns `false` by default, but if you prefer, you can implement a custom functionality.
+
+```javascript
+  var fsm = new StateMachine({
+    init: 'A',
+    transitions: [
+      { name: 'step', from: 'A', to: 'B' },
+    ],
+    methods: {
+      onLeaveA: function() {
+        return false;
+      },
+      onCancelledTransition: function(transition, from, to) {
+        throw new Exception("transition cancelled");
+      }
+    }
+  });
+
+  fsm.state;       // 'A'
+  fsm.can('step'), // true
+  fsm.step();      //  <-- transition is cancelled and throws "transition cancelled"
+```
