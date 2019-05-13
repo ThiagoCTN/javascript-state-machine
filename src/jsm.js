@@ -157,7 +157,8 @@ mixin(JSM.prototype, {
                      .catch(this.failTransit.bind(this))
       }
       else if (result === false) {
-        return this.endTransit(this.context.onCancelledTransition(args[0].transition, args[0].from, args[0].to));
+        this.endTransit();
+        return this.context.onCancelledTransition(args[0].transition, args[0].from, args[0].to);
       }
       else {
         return this.observeEvents(events, args, event, result);

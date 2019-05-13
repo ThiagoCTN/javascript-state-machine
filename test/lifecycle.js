@@ -980,3 +980,47 @@ test('cancelled transition handler can be customized', t => {
 })
 
 //-------------------------------------------------------------------------------------------------
+
+test('a cancelled transition is not on pending state', t => {
+
+  var fsm = new StateMachine({
+    transitions: [
+      { name: 'stepA', from: 'none', to: 'A' },
+      { name: 'stepB', from: 'A', to: 'B' },
+      { name: 'reset', from: 'A', to: 'none' },
+    ],
+    methods: {
+      onBeforeStepB: function() { return false; },
+      
+      onCancelledTransition: function(transition, from, to) {
+        throw { message: "transition cancelled", transition: transition, from: from, to: to, current: this.state };
+      }
+    }
+  });
+
+  t.is(fsm.state,       'none');
+  t.is(fsm.can('stepA'), true);
+
+  fsm.stepA();
+
+  t.is(fsm.can('stepB'), true);
+
+  const error = t.throws(() => {
+    fsm.stepB();
+  });
+
+  t.is(error.message,    'transition cancelled');
+  t.is(error.transition, 'stepB');
+  t.is(error.from,       'A');
+  t.is(error.to,         'B');
+  t.is(error.current,    'A');
+
+  t.is(fsm.state,       'A');
+  t.is(fsm.can('reset'), true);
+
+  fsm.reset();
+
+  t.is(fsm.state,       'none');
+})
+
+//-------------------------------------------------------------------------------------------------
